@@ -32,11 +32,11 @@ Password: 123456 <br>
 Role: Manager <br>
 
 2- <br>
-User: claudia@claudia.com
+User: claudia@claudia.com <br>
 Password: 123456 <br>
 Role: Manager <br>
 
 3- <br>
-User: teresa@teresa.com
+User: teresa@teresa.com <br>
 Password: 123456 <br>
 Role: Revisor <br>
