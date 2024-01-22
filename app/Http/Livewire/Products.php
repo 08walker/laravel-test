@@ -38,48 +38,54 @@ class Products extends Component
     }
 
     public function store(){
-        // Validate Form Request
-        $this->validate();
+        if(auth()->user()->role == 'Manager'){
+            // Validate Form Request
+            $this->validate();
+            try{
+                // Create Product
+                $imagen = $this->image;                        
+                $number = Producto::count() + 1;
+                $filename = 'product-'.time().'-'.$number.'.'.$this->image->extension();
+                $ruta = public_path("productos/");
+                copy($imagen->getRealPath(),$ruta.$filename);
 
-        try{
-            // Create Product
-            $imagen = $this->image;                        
-            $number = Producto::count() + 1;
-            $filename = 'product-'.time().'-'.$number.'.'.$this->image->extension();
-            $ruta = public_path("productos/");
-            copy($imagen->getRealPath(),$ruta.$filename);
+                $product = Producto::create([
+                    'title'=>$this->title,
+                    'description'=>$this->description,
+                    'image'=>$filename,
+                    'price'=>$this->price,
+                ]);
 
-            $product = Producto::create([
-                'title'=>$this->title,
-                'description'=>$this->description,
-                'image'=>$filename,
-                'price'=>$this->price,
-            ]);
+                // Set Flash Message
+                $this->dispatchBrowserEvent('alert',[
+                    'type'=>'success',
+                    'message'=>"Product Created Successfully!!"
+                ]);
 
-            // Set Flash Message
-            $this->dispatchBrowserEvent('alert',[
-                'type'=>'success',
-                'message'=>"Product Created Successfully!!"
-            ]);
+                // Reset Form Fields After Creating Category
+                $this->resetFields();
+            }catch(\Exception $e){
+                // Set Flash Message
+                $this->dispatchBrowserEvent('alert',[
+                    'type'=>'error',
+                    'message'=>"Something goes wrong while creating product!!"
+                ]);
 
-            // Reset Form Fields After Creating Category
-            $this->resetFields();
-        }catch(\Exception $e){
-            // Set Flash Message
+                // Reset Form Fields After Creating Category
+                $this->resetFields();
+            }
+        }
+        else{
             $this->dispatchBrowserEvent('alert',[
                 'type'=>'error',
-                'message'=>"Something goes wrong while creating product!!"
+                'message'=>"You do not have permissions!!"
             ]);
-
-            // Reset Form Fields After Creating Category
-            $this->resetFields();
         }
     }
     public function edit($id){
         $product = Producto::findOrFail($id);
         $this->title = $product->title;
         $this->description = $product->description;
-        // $this->image = $product->image;
         $this->product_id = $product->id;
         $this->price = $product->price;
         $this->updateProduct = true;
@@ -87,48 +93,56 @@ class Products extends Component
 
     public function update(){
 
-        // Validate request
-        $this->validate([
-            'title'=>'required',
-            'price'=>'required|numeric|min:1',
-            'description'=>'required'
-        ]);
-
-        try{
-            // Update category
-            if ($this->image) {
-                $imagen = $this->image;                        
-                $number = $this->product_id;
-                $filename = 'product-'.time().'-'.$number.'.'.$this->image->getClientOriginalExtension();
-                $ruta = public_path("productos/");
-                copy($imagen->getRealPath(),$ruta.$filename);
-
-                Producto::find($this->product_id)->fill([
-                    'title'=>$this->title,
-                    'description'=>$this->description,
-                    'image'=>$filename,
-                    'price'=>$this->price,
-                ])->save();
-            }else{
-                Producto::find($this->product_id)->fill([
-                    'title'=>$this->title,
-                    'description'=>$this->description,
-                    'price'=>$this->price,
-                ])->save();
-            }
-
-            $this->dispatchBrowserEvent('alert',[
-                'type'=>'success',
-                'message'=>"Product Updated Successfully!!"
+        if(auth()->user()->role == 'Manager'){
+            // Validate request
+            $this->validate([
+                'title'=>'required',
+                'price'=>'required|numeric|min:1',
+                'description'=>'required'
             ]);
-    
-            $this->cancel();
-        }catch(\Exception $e){
+
+            try{
+                // Update category
+                if ($this->image) {
+                    $imagen = $this->image;                        
+                    $number = $this->product_id;
+                    $filename = 'product-'.time().'-'.$number.'.'.$this->image->getClientOriginalExtension();
+                    $ruta = public_path("productos/");
+                    copy($imagen->getRealPath(),$ruta.$filename);
+
+                    Producto::find($this->product_id)->fill([
+                        'title'=>$this->title,
+                        'description'=>$this->description,
+                        'image'=>$filename,
+                        'price'=>$this->price,
+                    ])->save();
+                }else{
+                    Producto::find($this->product_id)->fill([
+                        'title'=>$this->title,
+                        'description'=>$this->description,
+                        'price'=>$this->price,
+                    ])->save();
+                }
+
+                $this->dispatchBrowserEvent('alert',[
+                    'type'=>'success',
+                    'message'=>"Product Updated Successfully!!"
+                ]);
+        
+                $this->cancel();
+            }catch(\Exception $e){
+                $this->dispatchBrowserEvent('alert',[
+                    'type'=>'error',
+                    'message'=>"Something goes wrong while updating product!!"
+                ]);
+                $this->cancel();
+            }
+        }
+        else{
             $this->dispatchBrowserEvent('alert',[
                 'type'=>'error',
-                'message'=>"Something goes wrong while updating product!!"
+                'message'=>"You do not have permissions!!"
             ]);
-            $this->cancel();
         }
     }
 
@@ -140,17 +154,25 @@ class Products extends Component
 
     public function destroy($id)
     {
-        if ($id) {
-            $record = Producto::where('id', $id);
-            $record->delete();
-            $this->dispatchBrowserEvent('alert',[
-                'type'=>'success',
-                'message'=>"Product Deleted Successfully!!"
-            ]);
-        }else{
+        if(auth()->user()->role == 'Manager'){
+            if ($id) {
+                $record = Producto::where('id', $id);
+                $record->delete();
+                $this->dispatchBrowserEvent('alert',[
+                    'type'=>'success',
+                    'message'=>"Product Deleted Successfully!!"
+                ]);
+            }else{
+                $this->dispatchBrowserEvent('alert',[
+                    'type'=>'error',
+                    'message'=>"Something goes wrong while deleting product!!"
+                ]);
+            }
+        }
+        else{
             $this->dispatchBrowserEvent('alert',[
                 'type'=>'error',
-                'message'=>"Something goes wrong while deleting product!!"
+                'message'=>"You do not have permissions!!"
             ]);
         }
     }

@@ -26,17 +26,17 @@ php artisan serve
 
 
 ## Credentials
-1-
-User: david@david.com
-Password: 123456
-Role: Manager
+1- <br>
+User: david@david.com <br>
+Password: 123456 <br>
+Role: Manager <br>
 
-2-
+2- <br>
 User: claudia@claudia.com
-Password: 123456
-Role: Manager
+Password: 123456 <br>
+Role: Manager <br>
 
-3-
+3- <br>
 User: teresa@teresa.com
-Password: 123456
-Role: Revisor
+Password: 123456 <br>
+Role: Revisor <br>
